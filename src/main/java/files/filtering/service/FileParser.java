@@ -7,6 +7,7 @@ import files.filtering.format.IntegerFormat;
 import files.filtering.format.StringFormat;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
@@ -19,27 +20,29 @@ public class FileParser {
         Format strings = new StringFormat("strings");
 
         for(String fileName : args.getInputFiles()) {
-            BufferedReader br = new BufferedReader(new FileReader(fileName));
-            String line;
-            while((line = br.readLine()) != null){
-                if(isInteger(line)){
-                    integers.incrementNum();
-                    integers.updateElements(line);
+            try(BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (isInteger(line)) {
+                        integers.incrementNum();
+                        integers.updateElements(line);
 
-                    integers.compareAndSubstitute(line);
-                } else if(isFloat(line)){
-                    floats.incrementNum();
-                    floats.updateElements(line);
+                        integers.compareAndSubstitute(line);
+                    } else if (isFloat(line)) {
+                        floats.incrementNum();
+                        floats.updateElements(line);
 
-                    floats.compareAndSubstitute(line);
-                } else{
-                    strings.incrementNum();
-                    strings.updateElements(line);
+                        floats.compareAndSubstitute(line);
+                    } else {
+                        strings.incrementNum();
+                        strings.updateElements(line);
 
-                    strings.compareAndSubstitute(line);
+                        strings.compareAndSubstitute(line);
+                    }
                 }
+            } catch (IOException e){
+                throw new FileNotFoundException("couldn't find file " + fileName);
             }
-            br.close();
         }
 
         return List.of(integers, floats, strings);
