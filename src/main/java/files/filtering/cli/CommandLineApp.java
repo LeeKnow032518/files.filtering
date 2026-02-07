@@ -1,10 +1,11 @@
 package files.filtering.cli;
 
+import files.filtering.format.Format;
 import files.filtering.service.FileParser;
-import files.filtering.stats.FullStatistic;
+import files.filtering.service.FileWriter;
 import org.apache.commons.cli.*;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class CommandLineApp {
@@ -23,9 +24,19 @@ public class CommandLineApp {
             }
 
             Args arguments = createArgs(commandLine);
-            FileParser.parseInputFiles(arguments);
+            List<Format> formats = FileParser.parseInputFiles(arguments);
+            for(Format format : formats){
+                if(format != null){
+                    FileWriter.writeOutputFile(format, arguments);
+                    if(arguments.isFullStats()){
+                        format.printFullStatistic();
+                    } else if(arguments.isShortStats()){
+                        format.printStatistic();
+                    }
+                }
+            }
 
-        }catch (ParseException | IllegalArgumentException e){
+        }catch (ParseException | IllegalArgumentException | IOException e){
             System.out.println("An error occurred: " + e.getMessage());
         }
     }
