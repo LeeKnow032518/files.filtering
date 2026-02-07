@@ -2,10 +2,11 @@ package files.filtering;
 
 import files.filtering.cli.CommandLineApp;
 
+/**
+ * Основной метод для запуска приложения.
+ */
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
-
         CommandLineApp.parseArgs(args);
     }
 }
