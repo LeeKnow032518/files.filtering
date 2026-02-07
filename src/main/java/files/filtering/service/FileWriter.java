@@ -6,9 +6,9 @@ import files.filtering.format.Format;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class FileWriter {
 
@@ -24,28 +24,37 @@ public class FileWriter {
 
         String path = sb.toString();
 
-        System.out.println(path);
-
-        BufferedWriter bw = createWriter(path, arguments.isAdd());
-        for(String l : format.getElements()){
-           bw.write(l);
-            bw.newLine();
-        }
+        BufferedWriter bw = createWriter(arguments.isAdd(), path, arguments.getPath());
+            for (String l : format.getElements()) {
+                bw.write(l);
+                bw.newLine();
+            }
         bw.close();
     }
 
-    public static BufferedWriter createWriter(String path, boolean addMode) throws IOException {
+    public static BufferedWriter createWriter(boolean toAdd, String path, String pathToFile) throws IOException {
+
+        List<String> pathArgs = Arrays.stream(path.split("/")).toList();
+
         Path filePath = Path.of(path);
 
-        if (addMode) {
+        if (toAdd) {
             if (!Files.exists(filePath)) {
-                throw new FileNotFoundException();
+                throw new FileNotFoundException("couldn't find file on path " + path);
             }
-            return Files.newBufferedWriter(filePath, StandardOpenOption.WRITE);
+            return new BufferedWriter(new java.io.FileWriter(path, true));
         } else {
-            return Files.newBufferedWriter(filePath,
-                StandardOpenOption.CREATE_NEW,
-                StandardOpenOption.WRITE);
+            try {
+                return Files.newBufferedWriter(filePath,
+                    StandardOpenOption.CREATE_NEW,
+                    StandardOpenOption.WRITE);
+            } catch (NoSuchFileException e){
+                throw new NoSuchFileException("couldn't find file path " + pathToFile);
+            } catch (FileAlreadyExistsException e) {
+                throw new FileNotFoundException("file " + pathArgs.get(pathArgs.size() - 1) + " already exists");
+            } catch (IOException e){
+                throw new IOException("couldn't create file " + pathArgs.get(pathArgs.size() - 1));
+            }
         }
     }
 }
